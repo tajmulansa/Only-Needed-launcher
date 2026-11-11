@@ -32,6 +32,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -91,13 +92,13 @@ import java.util.Date
 import java.util.Locale
 import kotlinx.coroutines.delay
 
-/** Home: a rolling clock, your next task, a few plain app names and the dock. Pull the top down for Quick actions. */
+/** Home: a rolling clock, six numbered app slots and a search pill. Swipe up to search, swipe down for Settings. */
 @Composable
 fun HomeScreen(
     state: LauncherState,
     nav: Nav,
     onOpenApp: (AppEntry) -> Unit,
-    onOpenDrawer: () -> Unit,
+    onOpenSearch: () -> Unit,
 ) {
     val scope = androidx.compose.runtime.rememberCoroutineScope()
     val context = LocalContext.current
@@ -114,8 +115,8 @@ fun HomeScreen(
     val shownHour = if (use24) hour24 else (hour24 % 12).let { if (it == 0) 12 else it }
     val minute = cal.get(Calendar.MINUTE)
 
-    Column(Modifier.fillMaxSize().verticalSwipes(onUp = onOpenDrawer, onDown = { nav.go(Route.Settings) })) {
-        // Top row. Tap the date to open Quick actions. Swipe up anywhere to open All apps, swipe down from the top for Quick actions.
+    Column(Modifier.fillMaxSize().verticalSwipes(onUp = onOpenSearch, onDown = { nav.go(Route.Settings) })) {
+        // Top row: the date and Settings. Swipe up anywhere to search, swipe down from the top for Settings.
         Column {
             Row(
                 Modifier.fillMaxWidth().padding(start = 28.dp, end = 20.dp, top = 12.dp).enterStagger(0, once = true),
@@ -148,35 +149,34 @@ fun HomeScreen(
             }
         }
 
-        Hair(0, Modifier.padding(horizontal = 28.dp, vertical = 20.dp))
+        Hair(0, Modifier.padding(horizontal = 28.dp, vertical = 18.dp))
 
-        Column(
-            Modifier.weight(1f).fillMaxWidth().padding(start = 28.dp, end = 28.dp, bottom = 150.dp),
+        // A quiet label for the list, with today's screen time on the right when Usage access is allowed.
+        val screen = state.screenTimeMs
+        Row(
+            Modifier.fillMaxWidth().padding(horizontal = 28.dp).enterStagger(2, once = true),
+            horizontalArrangement = Arrangement.SpaceBetween,
         ) {
-            // Rows that would not fully fit are left out instead of being cut in half.
+            Caption("Your six")
+            if (screen != null) Caption("Today \u00B7 ${formatMillis(screen)}")
+        }
+
+        Column(Modifier.weight(1f).fillMaxWidth().padding(start = 28.dp, end = 28.dp, top = 6.dp, bottom = 112.dp)) {
+            // Always six slots, so Home keeps its shape. Rows that would not fully fit are left out instead of cut in half.
             FitColumn(Modifier.fillMaxWidth().weight(1f)) {
-                val shown = state.homeApps.mapNotNull { state.appByPackage(it) }
-                shown.forEachIndexed { i, app ->
+                val picked = state.homeApps.mapNotNull { state.appByPackage(it) }
+                for (i in 0 until 6) {
+                    val app = picked.getOrNull(i)
                     Box(Modifier.enterStagger(3 + i, once = true)) {
-                        AppRow(app, onClick = { onOpenApp(app) })
+                        SlotRow(
+                            number = i + 1, app = app, showAdd = i == picked.size,
+                            onClick = { if (app != null) onOpenApp(app) else nav.go(Route.HomePicker) },
+                        )
                     }
                 }
                 LaunchedEffect(Unit) { delay(900); Intro.played = true }
-                if (shown.size < 6) {
-                    Row(
-                        Modifier.fillMaxWidth().clickableRole({ nav.go(Route.HomePicker) }).padding(vertical = 12.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(10.dp),
-                    ) {
-                        AppIcon(Ic.Plus, AppColors.muted, size = 18.dp)
-                        AppText(if (shown.isEmpty()) "Choose your six apps" else "Add an app", size = 18.sp, weight = FontWeight.Medium, color = AppColors.muted)
-                    }
-                }
-                val screen = state.screenTimeMs
-                if (screen != null) Caption("Screen time today \u00B7 ${formatMillis(screen)}", Modifier.padding(top = 14.dp))
             }
         }
-
     }
 }
 
@@ -285,24 +285,34 @@ fun Hair(index: Int, modifier: Modifier = Modifier) {
     )
 }
 
+/** One of the six slots: a small number, then the app name. Empty slots stay quiet, the next free one says "Add an app". */
 @Composable
-private fun AppRow(app: AppEntry, onClick: () -> Unit) {
+private fun SlotRow(number: Int, app: AppEntry?, showAdd: Boolean, onClick: () -> Unit) {
     val source = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
     val pressed by source.collectIsPressedAsState()
     val shift by animateFloatAsState(if (pressed) 8f else 0f, Motion.press(), label = "shift")
+    val numColor by animateColorAsState(if (pressed) AppColors.text else if (app != null) AppColors.muted else AppColors.dot, Motion.state(200), label = "num")
     Row(
         Modifier
             .fillMaxWidth()
+            .heightIn(min = 46.dp)
             .graphicsLayer { translationX = shift.dp.toPx(); scaleX = if (pressed) 0.985f else 1f; scaleY = if (pressed) 0.985f else 1f }
             .clickable(interactionSource = source, indication = null, onClick = onClick)
             .padding(vertical = 7.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        AppText(
-            app.label, Modifier.weight(1f), size = 28.sp, weight = FontWeight.Medium, letterSpacing = (-1.1).sp, lineHeight = 32.sp,
-            color = AppColors.text, maxLines = 1,
-        )
+        AppText(number.toString().padStart(2, '0'), Modifier.width(36.dp), size = 12.sp, weight = FontWeight.Medium, color = numColor, letterSpacing = 1.sp, mono = true)
+        when {
+            app != null -> AppText(
+                app.label, Modifier.weight(1f), size = 28.sp, weight = FontWeight.Medium, letterSpacing = (-1.1).sp, lineHeight = 32.sp,
+                color = AppColors.text, maxLines = 1,
+            )
+            showAdd -> Row(Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                AppIcon(Ic.Plus, AppColors.muted, size = 18.dp)
+                AppText("Add an app", size = 20.sp, weight = FontWeight.Medium, color = AppColors.muted, maxLines = 1)
+            }
+            else -> Box(Modifier.weight(1f).height(1.dp).background(AppColors.line))
+        }
     }
 }
 
@@ -345,32 +355,33 @@ fun Modifier.verticalSwipes(onUp: () -> Unit, onDown: () -> Unit): Modifier = po
     }
 }
 
-/** The bar at the bottom: the All apps pill and two round buttons, Phone and Messages. */
+/** The bar at the bottom: a search pill that fills the width, and two round buttons, Phone and Messages. */
 @Composable
-fun BottomBar(onApps: () -> Unit, onPhone: () -> Unit, onMessages: () -> Unit, modifier: Modifier = Modifier) {
+fun BottomBar(onSearch: () -> Unit, onPhone: () -> Unit, onMessages: () -> Unit, modifier: Modifier = Modifier) {
     Column(
         modifier
             .fillMaxWidth()
             .background(Brush.verticalGradient(0f to Color.Transparent, 0.38f to AppColors.phone, 1f to AppColors.phone))
             .padding(start = 22.dp, end = 22.dp, bottom = 22.dp, top = 34.dp),
     ) {
-        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(
                 Modifier
+                    .weight(1f)
                     .height(48.dp)
-                    .background(AppColors.text, RadiusPill)
-                    .clickableRole(onApps)
-                    .padding(start = 16.dp, end = 20.dp),
+                    .semantics { contentDescription = "Find an app" }
+                    .background(AppColors.card, RadiusPill)
+                    .border(1.dp, AppColors.line, RadiusPill)
+                    .clickableRole(onSearch)
+                    .padding(horizontal = 18.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
             ) {
-                AppIcon(Ic.Chevron, AppColors.phone, size = 18.dp, modifier = Modifier.graphicsLayer { rotationZ = -90f })
-                AppText("Find an app", size = 15.sp, weight = FontWeight.Medium, color = AppColors.phone, display = false)
+                AppIcon(Ic.Search, AppColors.muted, size = 18.dp)
+                AppText("Type an app's name", size = 15.sp, color = AppColors.muted, display = false, maxLines = 1)
             }
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                DockButton(Ic.Phone, "Phone", onPhone)
-                DockButton(Ic.Message, "Messages", onMessages)
-            }
+            DockButton(Ic.Phone, "Phone", onPhone)
+            DockButton(Ic.Message, "Messages", onMessages)
         }
     }
 }

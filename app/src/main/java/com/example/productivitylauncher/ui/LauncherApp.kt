@@ -3,6 +3,7 @@ package com.example.productivitylauncher.ui
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.SizeTransform
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
@@ -31,7 +32,7 @@ import com.example.productivitylauncher.data.launchApp
 import com.example.productivitylauncher.data.openMessages
 import com.example.productivitylauncher.data.openPhone
 import com.example.productivitylauncher.service.UrgeButtonService
-import com.example.productivitylauncher.ui.apps.AppDrawer
+import com.example.productivitylauncher.ui.apps.AppSearch
 import com.example.productivitylauncher.ui.apps.HomePickerScreen
 import com.example.productivitylauncher.ui.gate.TimeScreen
 import com.example.productivitylauncher.ui.gate.TimesUpScreen
@@ -53,7 +54,7 @@ fun LauncherApp(state: LauncherState, homeSignal: Int) {
 
     var route by remember { mutableStateOf<Route>(if (state.onboarded) Route.Main else Route.Onboarding) }
     val stack = remember { ArrayList<Route>() }
-    var drawerOpen by remember { mutableStateOf(false) }
+    var searchOpen by remember { mutableStateOf(false) }
 
     // The red button: while its timer runs, nothing but the lock screen is shown.
     val urgeNow by produceState(System.currentTimeMillis(), state.urgeEnd) {
@@ -69,7 +70,7 @@ fun LauncherApp(state: LauncherState, homeSignal: Int) {
             UrgeButtonService.guard(context)
             stack.clear()
             if (route != Route.Onboarding) route = Route.Main
-            drawerOpen = false
+            searchOpen = false
         }
     }
 
@@ -78,7 +79,7 @@ fun LauncherApp(state: LauncherState, homeSignal: Int) {
             go = { r ->
                 if (r == Route.Main) stack.clear() else stack.add(route)
                 route = r
-                drawerOpen = false
+                searchOpen = false
             },
             back = { route = if (stack.isNotEmpty()) stack.removeAt(stack.lastIndex) else Route.Main },
         )
@@ -89,7 +90,7 @@ fun LauncherApp(state: LauncherState, homeSignal: Int) {
         if (homeSignal > 0) {
             stack.clear()
             if (route != Route.Onboarding) route = Route.Main
-            drawerOpen = false
+            searchOpen = false
         }
     }
 
@@ -120,7 +121,7 @@ fun LauncherApp(state: LauncherState, homeSignal: Int) {
         when {
             urgeActive -> Unit
             route == Route.Onboarding -> Unit
-            drawerOpen -> drawerOpen = false
+            searchOpen -> searchOpen = false
             route != Route.Main -> nav.back()
         }
     }
@@ -161,14 +162,18 @@ fun LauncherApp(state: LauncherState, homeSignal: Int) {
         ) { r ->
             if (r == null) UrgeScreen(state.urgeEnd - urgeNow) else when (r) {
                 Route.Main -> Box(Modifier.fillMaxSize()) {
-                    HomeScreen(state, nav, onOpenApp = { openApp(it) }, onOpenDrawer = { drawerOpen = true })
-                    BottomBar(
-                        modifier = Modifier.align(Alignment.BottomCenter),
-                        onApps = { drawerOpen = true },
-                        onPhone = { openPhone(context) },
-                        onMessages = { openMessages(context) },
-                    )
-                    AppDrawer(state, drawerOpen, { drawerOpen = false }, onOpenApp = { openApp(it) })
+                    // Home steps back a little while search is open, then settles forward again.
+                    val front by animateFloatAsState(if (searchOpen) 0f else 1f, Motion.morph(360), label = "homeFront")
+                    Box(Modifier.fillMaxSize().graphicsLayer { alpha = front; scaleX = 0.96f + 0.04f * front; scaleY = 0.96f + 0.04f * front }) {
+                        HomeScreen(state, nav, onOpenApp = { openApp(it) }, onOpenSearch = { searchOpen = true })
+                        BottomBar(
+                            modifier = Modifier.align(Alignment.BottomCenter),
+                            onSearch = { searchOpen = true },
+                            onPhone = { openPhone(context) },
+                            onMessages = { openMessages(context) },
+                        )
+                    }
+                    AppSearch(state, searchOpen, { searchOpen = false }, onOpenApp = { openApp(it) })
                 }
                 is Route.Time -> {
                     val app = state.appByPackage(r.pkg)

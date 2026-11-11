@@ -6,17 +6,13 @@ M=com.example.productivitylauncher.MainActivity # activity class lives in the so
 adb install -r "$APK"
 adb shell wm size
 shot(){ sleep "${2:-2}"; adb exec-out screencap -p > "shots/$1.png"; }
-# seed state before first launch
+# Seed state before first launch: three Home apps, so Home shows filled and empty slots.
 cat > /tmp/launcher.xml <<'X'
 <?xml version='1.0' encoding='utf-8' standalone='yes' ?>
 <map>
 <boolean name="onboarded" value="true" />
-<string name="user_name">Tajmul</string>
-<string name="tasks">[{"id":"1","text":"Read chapter 3","done":true},{"id":"2","text":"Email Prof. Rao","done":true},{"id":"3","text":"Finish chemistry chapter 4","done":false},{"id":"4","text":"Physics problem sheet","done":false},{"id":"5","text":"Plan revision","done":false}]</string>
-<string name="home_apps">["com.android.settings","com.android.chrome","com.android.contacts","com.android.camera2","com.google.android.calendar","com.google.android.deskclock","com.android.calculator2"]</string>
-<string name="widgets">["habits"]</string>
-<string name="habits">[{"id":"h1","anchor":"I wake up","action":"Drink a glass of water","done":["2026-10-25","2026-10-24"]},{"id":"h2","anchor":"I drink water","action":"Read 10 pages","done":[]}]</string>
-<set name="gated"><string>com.android.chrome</string></set>
+<boolean name="urge_button" value="false" />
+<string name="home_apps">["com.android.settings","com.android.chrome","com.android.contacts"]</string>
 </map>
 X
 adb shell am start -n $P/$M; sleep 3; adb shell am force-stop $P
@@ -40,36 +36,28 @@ for node in re.finditer(r'<node [^>]*>',x):
 else: print('not found',sys.argv[1])
 PY
 }
-tap_text STUDY; shot 02_today 3
-tap_text "Add widget"; shot 10_add_widget 3
+# Search: the pill opens it, the keyboard is already up, an empty hint shows first.
+tap_text "Find an app"; shot 02_search_empty 3
+adb shell input text Calculator
+shot 03_search_result 3
 adb shell input keyevent 4; sleep 2
-adb shell input swipe 540 1900 540 700 400
-adb shell input swipe 540 1900 540 700 400
-shot 03_today_scrolled 2
-tap_text HOME; sleep 2
-adb shell input swipe 540 1700 540 800 250
-shot 04_drawer 3
-tap_text "Search apps"; sleep 1
-adb shell input text Chrome
-shot 05_drawer_search 2
-adb shell input tap 300 810; sleep 1
-shot 06_gate 2
-shot 07_gate_later 8
-shot 09_phrase 14
-adb shell input keyevent 4
-sleep 1
-adb shell input keyevent 3
-sleep 2
-sleep 3; adb shell input tap 276 225
-shot 08_quick 3
-# Home again after everything has settled (the intro animation can still be running in the first shot on a slow runner).
-adb shell input keyevent 3; sleep 12
-shot 11_home_settled 2
-# Steady mode: the Steady dock icon (third round button) opens the landscape flip clock.
-
-tap_text "Steady mode"; sleep 4
-tap_text "Got it"; sleep 3
-shot 12_steady 3
-adb shell input keyevent 4; sleep 3
-shot 13_after_steady 2
+adb shell input keyevent 4; sleep 2
+# Search a name that matches nothing.
+adb shell input swipe 540 1700 540 800 250; sleep 2
+adb shell input text Nothing
+shot 04_search_none 3
+adb shell input keyevent 4; adb shell input keyevent 4; sleep 2
+# An app that is not on Home asks how long.
+tap_text "Find an app"; sleep 2
+adb shell input text Calculator; sleep 1
+adb shell uiautomator dump /sdcard/u.xml >/dev/null; adb pull /sdcard/u.xml /tmp/u.xml >/dev/null
+tap_text "Calculator"; shot 05_time 3
+adb shell input keyevent 4; sleep 2
+# Settings.
+adb shell input keyevent 3; sleep 2
+tap_text Settings; shot 06_settings 3
+adb shell input swipe 540 1800 540 600 300
+shot 07_settings_scrolled 2
+adb shell input keyevent 3; sleep 10
+shot 08_home_settled 2
 adb logcat -d -s AndroidRuntime:E > shots/crash.txt

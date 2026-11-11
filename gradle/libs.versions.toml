@@ -2,7 +2,7 @@
 # Dependabot opens PRs to bump these. If a bump breaks the build, fix it in the same PR.
 
 [versions]
-agp = "8.13.2"
+agp = "9.5.1"
 kotlin = "2.2.21"
 composeBom = "2025.10.00"
 coreKtx = "1.17.0"

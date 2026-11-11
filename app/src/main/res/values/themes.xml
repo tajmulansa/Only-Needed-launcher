@@ -1,0 +1,7 @@
+<resources>
+    <!-- Window theme only (shown before Compose draws). All real UI is in Compose. -->
+    <style name="Theme.Launcher" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/window_bg</item>
+        <item name="android:windowShowWallpaper">false</item>
+    </style>
+</resources>

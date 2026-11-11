@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Icon: a two-tone check mark, the short stroke muted and the long stroke bright. Swap this file and ic_launcher_background to rebrand. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M32,56 L46,70"
+        android:strokeColor="#7B7F79"
+        android:strokeWidth="10"
+        android:strokeLineCap="round" />
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M46,70 L76,39"
+        android:strokeWidth="10"
+        android:strokeLineCap="round">
+        <aapt:attr name="android:strokeColor">
+            <gradient android:type="linear" android:startX="0" android:startY="39" android:endX="0" android:endY="70" android:startColor="#FFFFFF" android:endColor="#E3E5E0" />
+        </aapt:attr>
+    </path>
+</vector>

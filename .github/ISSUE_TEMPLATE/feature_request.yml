@@ -1,0 +1,37 @@
+name: Feature or idea
+description: Suggest a feature, a widget, or an improvement
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before you write, please read the principles in `docs/DESIGN.md`.
+        Good ideas fit them: minimal, gentle (never shaming), student-focused, and local-only.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve for a student?
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: Your idea
+      description: How should it work? Sketches are welcome.
+    validations:
+      required: true
+  - type: input
+    id: technique
+    attributes:
+      label: Productivity technique or book behind it (optional)
+      placeholder: "Example: implementation intentions, Atomic Habits"
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you considered
+  - type: checkboxes
+    id: help
+    attributes:
+      label: Contributing
+      options:
+        - label: I would like to work on this myself

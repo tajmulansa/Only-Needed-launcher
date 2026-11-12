@@ -127,11 +127,11 @@ fun TimeScreen(state: LauncherState, app: AppEntry, nav: Nav) {
                     )
                 }
             }
-            Row(Modifier.padding(top = 18.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+            Row(Modifier.padding(top = 18.dp).offset(x = (-10).dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                 TextLink(if (custom) "Custom" else "Custom time", { custom = true })
                 if (custom) Stepper("$customMin min", { customMin = (customMin - 5).coerceAtLeast(1) }, { customMin = (customMin + 5).coerceAtMost(180) }, valueWidth = 90.dp)
             }
-            if (!canDrawOverlays(context)) TextLink("Allow the floating timer", { openOverlaySettings(context) })
+            if (!canDrawOverlays(context)) TextLink("Allow the floating timer", { openOverlaySettings(context) }, Modifier.offset(x = (-10).dp))
         }
         Cta("Open ${app.label} for $minutes min", true) {
             state.startSession(app.packageName, minutes)

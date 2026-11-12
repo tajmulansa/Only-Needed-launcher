@@ -6,13 +6,13 @@ M=com.example.productivitylauncher.MainActivity # activity class lives in the so
 adb install -r "$APK"
 adb shell wm size
 shot(){ sleep "${2:-2}"; adb exec-out screencap -p > "shots/$1.png"; }
-# Seed state before first launch: three Home apps, so Home shows filled and empty slots.
+# Seed state before first launch: two Home apps, so Home shows filled and empty slots.
 cat > /tmp/launcher.xml <<'X'
 <?xml version='1.0' encoding='utf-8' standalone='yes' ?>
 <map>
 <boolean name="onboarded" value="true" />
 <boolean name="urge_button" value="false" />
-<string name="home_apps">["com.android.settings","com.android.chrome","com.android.contacts"]</string>
+<string name="home_apps">["com.android.settings","com.android.contacts"]</string>
 </map>
 X
 adb shell am start -n $P/$M; sleep 3; adb shell am force-stop $P
@@ -38,7 +38,7 @@ PY
 }
 # Search: the pill opens it, the keyboard is already up, an empty hint shows first.
 tap_text "Find an app"; shot 02_search_empty 3
-adb shell input text Calculator
+adb shell input text Chrome
 shot 03_search_result 3
 adb shell input keyevent 4; sleep 2
 adb shell input keyevent 4; sleep 2
@@ -49,9 +49,9 @@ shot 04_search_none 3
 adb shell input keyevent 4; adb shell input keyevent 4; sleep 2
 # An app that is not on Home asks how long.
 tap_text "Find an app"; sleep 2
-adb shell input text Calculator; sleep 1
+adb shell input text Chrome; sleep 1
 adb shell uiautomator dump /sdcard/u.xml >/dev/null; adb pull /sdcard/u.xml /tmp/u.xml >/dev/null
-tap_text "Calculator"; shot 05_time 3
+tap_text "Chrome"; shot 05_time 3
 adb shell input keyevent 4; sleep 2
 # Settings.
 adb shell input keyevent 3; sleep 2

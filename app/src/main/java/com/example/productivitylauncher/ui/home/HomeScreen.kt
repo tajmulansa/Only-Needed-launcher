@@ -295,7 +295,7 @@ private fun SlotRow(number: Int, app: AppEntry?, showAdd: Boolean, onClick: () -
     Row(
         Modifier
             .fillMaxWidth()
-            .heightIn(min = 46.dp)
+            .heightIn(min = 64.dp)
             .graphicsLayer { translationX = shift.dp.toPx(); scaleX = if (pressed) 0.985f else 1f; scaleY = if (pressed) 0.985f else 1f }
             .clickable(interactionSource = source, indication = null, onClick = onClick)
             .padding(vertical = 7.dp),

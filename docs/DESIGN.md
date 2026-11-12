@@ -23,8 +23,8 @@
 | `line` | text at ~13% | text at ~13% | Hairlines, tracks |
 
 - **Fonts:** Bricolage Grotesque for large text (>= 19sp), Geist for body, Geist Mono for captions, times and numbers. All bundled (SIL OFL, see `OFL-*.txt`). Tabular figures for clocks and timers.
-- **Type scale:** page title 44sp Medium; step heading 34sp Medium; clock 112sp Light; ring/timer 56-60sp Light; list names 28sp (Home) and 24sp (drawer, pickers); body 17sp; secondary 15sp; small 13sp; caption 11sp mono uppercase with 1sp tracking. The same role always has the same size.
-- **Layout:** 28dp gutters, 1dp hairlines, pills and circles (no rounded cards), 30dp top corners on the drawer sheet.
+- **Type scale:** page title 44sp Medium; step heading 34sp Medium; clock 112sp Light; ring/timer 56-60sp Light; list names 28sp (Home) and 24sp (pickers); search line 36sp; body 17sp; secondary 15sp; small 13sp; caption 11sp mono uppercase with 1sp tracking. The same role always has the same size.
+- **Layout:** 28dp gutters, 1dp hairlines, pills and circles (no rounded cards). Home keeps a fixed shape of six numbered slots (mono 12sp numbers, empty slots are a faint line).
 - **Themes:** Auto, Light, Dark. **Look** filters: Standard, Gray, Warm, Contrast (a colour filter over the whole app).
 - **Motion:** slow and soft (cubic-bezier .32,.72,0,1). Rolling clock digits, staggered entrances, hairlines that draw in, pager parallax. One switch (Animations) turns all of it into instant changes. There is no app-opening animation.
 - **Accessibility:** red/terracotta is never the only signal (gated apps also carry a "gated" label); touch targets at least 44dp; text keeps good contrast in both themes.
@@ -35,7 +35,7 @@
 | --- | --- |
 | Home (page 1) | Clock, greeting with name, Up next, six Home apps, bottom bar |
 | Study (page 2) | Focus ring, week dots, screen-time bars, Tasks, Habit stack, other apps' widgets |
-| All apps | Bottom-sheet drawer with search and A to Z list |
+| Find an app | Full-screen search over Home: one big line of type, exact full name only, no app list |
 | Quick actions | Top sheet: toggles, noise player, Theme, Look |
 | Gate | Breathe, type "I choose to open <app>", choose minutes |
 | Locked, Time's up | Daily limit or focus lock; session finished |

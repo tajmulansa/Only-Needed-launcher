@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -142,9 +143,9 @@ fun AppSearch(state: LauncherState, open: Boolean, onClose: () -> Unit, onOpenAp
                                     Modifier.fillMaxWidth().clickableRole({ scope.launch { onClose(); delay(220); onOpenApp(app) } }).padding(top = 8.dp, bottom = 4.dp),
                                     size = 34.sp, weight = FontWeight.Medium, maxLines = 2, color = AppColors.text,
                                 )
-                                Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
+                                Row(Modifier.offset(x = (-10).dp), horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
                                     if (onHome) {
-                                        TextLink("Remove from Home", { state.updateHomeApps(state.homeApps - app.packageName) }, Modifier.padding(start = 0.dp))
+                                        TextLink("Remove from Home", { state.updateHomeApps(state.homeApps - app.packageName) })
                                     } else {
                                         TextLink(if (state.homeApps.size < 6) "Add to Home" else "Home is full", { state.updateHomeApps(state.homeApps + app.packageName) }, enabled = state.homeApps.size < 6)
                                     }

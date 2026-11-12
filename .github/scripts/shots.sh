@@ -50,8 +50,7 @@ adb shell input keyevent 4; adb shell input keyevent 4; sleep 2
 # An app that is not on Home asks how long.
 tap_text "Find an app"; sleep 2
 adb shell input text Chrome; sleep 1
-adb shell uiautomator dump /sdcard/u.xml >/dev/null; adb pull /sdcard/u.xml /tmp/u.xml >/dev/null
-tap_text "Chrome"; shot 05_time 3
+adb shell input tap 200 700; shot 05_time 3
 adb shell input keyevent 4; sleep 2
 # Settings.
 adb shell input keyevent 3; sleep 2

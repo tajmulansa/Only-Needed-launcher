@@ -19,8 +19,8 @@ Kotlin, Jetpack Compose, minSdk 26, targetSdk 36. Package/namespace `com.example
 
 ## Behaviour
 
-- **Home:** date (mono caps), settings gear top right, 112sp odometer clock, up to six app names (28sp, tap opens at once), "Add an app" row while fewer than six, a quiet one-line "Screen time today" total (needs Usage access), then the bottom bar: "Find an app" pill, Phone, Messages. Swipe up opens Find an app; swipe down opens Settings (`verticalSwipes`). Rows that do not fully fit are dropped by `FitColumn`.
-- **Find an app (drawer):** a bottom sheet with one text field. Nothing is listed until the full name of an app is typed exactly (case and edge spaces ignored, `exactNameMatches`). Long-press a result: Add to Home / App info.
+- **Home:** date (mono caps), settings gear top right, 112sp odometer clock, a hairline, a quiet "Your six" caption with today's screen time on its right (needs Usage access), then always six numbered slots (01 to 06). Filled slots show the app name (28sp, tap opens at once). The first empty slot says "Add an app"; the others are a faint line. At the bottom, a search pill ("Type an app's name") that fills the width, plus round Phone and Messages buttons. Swipe up or tap the pill to search; swipe down opens Settings (`verticalSwipes`). Rows that do not fully fit are dropped by `FitColumn`.
+- **Find an app (search, not a drawer):** `AppSearch` opens over Home (Home fades and steps back) with the keyboard already up. One big 36sp line of type. Nothing is listed until the full name of an app is typed exactly (case and edge spaces ignored, `exactNameMatches`). The match shows its name; tap it to open (Home apps at once, others go to the time screen). Under it: Add to Home / Remove from Home, and App info.
 - **Opening an app:** Home apps open at once. Any other app goes to `Route.Time`: choose 5, 10, 15, 30 or custom minutes, then the app opens and `SessionOverlayService` shows a small floating timer (needs Display over other apps). When time is up, `Route.TimesUp` on return ("Back to Home" or "I need a bit more").
 - **Red button:** on by default. `UrgeButtonService` draws a red dot over every app; two taps start a 5 minute lock (`urge_end`). `UrgeScreen` is a landscape Steady-style flip clock counting MM:SS with only Phone and Messages. Strict guard: during the lock `UrgeButtonService` keeps a 1px overlay and every 400 ms checks the foreground app through UsageStats; anything except the launcher, phone, messages, system UI and keyboard is sent back. `NotificationGuardService` (Notification access) dismisses notifications during the lock. Android cannot kill apps, so this works by bringing the launcher back.
 - **Setup:** welcome, pick six Home apps, permissions, theme and look.
@@ -33,7 +33,7 @@ app/src/main/java/com/example/productivitylauncher/
   MainActivity.kt          single HOME activity, 390dp design width scaling
   data/                    LauncherState (SharedPreferences "launcher"), Logic, System, Usage, AppEntry
   service/                 SessionOverlayService, UrgeButtonService, NotificationGuardService
-  ui/                      LauncherApp (routing), Nav, home/, apps/, gate/ (TimeScreen, TimesUp), urge/, steady/ (flip clock helpers only), settings/, onboarding/, components/, theme/
+  ui/                      LauncherApp (routing), Nav, home/, apps/ (SearchScreen, pickers), gate/ (TimeScreen, TimesUp), urge/, steady/ (flip clock helpers only), settings/, onboarding/, components/, theme/
 ```
 
 SharedPreferences keys: `onboarded, theme, look, animations, home_apps, urge_button, urge_end, session_pkg, session_end, session_notified`.
